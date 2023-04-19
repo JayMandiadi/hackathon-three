@@ -16,7 +16,7 @@ const openai = new OpenAIApi(configuration);
 router.get("/", async function (req, res, next) {
 
  
-  res.status(200).json(answer)
+  res.status(200).json({})
 });
 
 // Set the Azure DevOps organization and project details
@@ -32,7 +32,7 @@ async function generateTicketInfo(workItems) {
     console.log("work items", workItems)
     const prompt = `Please explain the following sprint tickets for Codev's Internal or Customer Portal. Please make a short suggestion on the best way to tackle these with the intention of a product owner helping a developer finish these tasks in two weeks and make sure to mention the id number of the ticket you are explaining. If these tasks doesnt seem doable in a two week sprint let me know: \n
     ${workItems.map((item) => {
-        return `Ticket:${item.id} Title:${convert(item.fields?.["System.Title"] || "")}  Story Points:${item.fields?.["Microsoft.VSTS.Scheduling.StoryPoints"]}\n`
+        return `Ticket:${item.id} Title:${convert(item.fields?.["System.Title"] || "")} ${convert(item.fields?.["System.Description"])}  Story Points:${item.fields?.["Microsoft.VSTS.Scheduling.StoryPoints"]}\n`
     })}
     `
     console.log("prompt", prompt)
@@ -83,7 +83,7 @@ router.get('/workitems/:user/sprint/:sprint', async (req, res) => {
     const workItems = await getSprintWorkItems(req)
     // Send the work item details back as the response
     const ticketPriority = await generateTicketInfo(workItems)
-    res.json(ticketPriority);
+    res.json({priority: ticketPriority, workItems});
   } catch (error) {
     console.error(error);
     res.status(error?.response?.status || 500).send(error);
